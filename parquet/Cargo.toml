@@ -28,11 +28,18 @@ readme = "README.md"
 edition = { workspace = true }
 rust-version = "1.70.0"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(target_family = "wasm")'.dependencies]
 ahash = { version = "0.8", default-features = false, features = ["compile-time-rng"] }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# TODO: temporary to fix parquet wasm build
+# upstream issue: https://github.com/gyscos/zstd-rs/issues/269
+zstd-sys = { version = ">=2.0.0, <2.0.14", optional = true, default-features = false }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
 ahash = { version = "0.8", default-features = false, features = ["runtime-rng"] }
+
+[target.'cfg(target_family = "wasm")'.dev-dependencies]
+zstd-sys = { version = ">=2.0.0, <2.0.14", default-features = false }
 
 [dependencies]
 arrow-array = { workspace = true, optional = true }
@@ -83,14 +90,6 @@ arrow = { workspace = true, features = ["ipc", "test_utils", "prettyprint", "jso
 tokio = { version = "1.0", default-features = false, features = ["macros", "rt", "io-util", "fs"] }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }
 object_store = { version = "0.11.0", default-features = false, features = ["azure"] }
-
-# TODO: temporary to fix parquet wasm build
-# upstream issue: https://github.com/gyscos/zstd-rs/issues/269
-[target.'cfg(target_family = "wasm")'.dependencies]
-zstd-sys = { version = ">=2.0.0, <2.0.14", optional = true, default-features = false }
-
-[target.'cfg(target_family = "wasm")'.dev-dependencies]
-zstd-sys = { version = ">=2.0.0, <2.0.14", default-features = false }
 
 [package.metadata.docs.rs]
 all-features = true
