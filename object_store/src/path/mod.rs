@@ -21,7 +21,7 @@ use itertools::Itertools;
 use percent_encoding::percent_decode;
 use snafu::{ensure, ResultExt, Snafu};
 use std::fmt::Formatter;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 use url::Url;
 
 /// The delimiter to separate object namespaces, creating a directory structure.
@@ -156,7 +156,7 @@ impl Path {
         })
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_family = "wasm"))]
     /// Convert a filesystem path to a [`Path`] relative to the filesystem root
     ///
     /// This will return an error if the path contains illegal character sequences
@@ -171,7 +171,7 @@ impl Path {
         Self::from_absolute_path(absolute)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_family = "wasm"))]
     /// Convert an absolute filesystem path to a [`Path`] relative to the filesystem root
     ///
     /// This will return an error if the path contains illegal character sequences,
@@ -180,7 +180,7 @@ impl Path {
         Self::from_absolute_path_with_base(path, None)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_family = "wasm"))]
     /// Convert a filesystem path to a [`Path`] relative to the provided base
     ///
     /// This will return an error if the path contains illegal character sequences,
@@ -323,7 +323,7 @@ where
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 /// Given an absolute filesystem path convert it to a URL representation without canonicalization
 pub(crate) fn absolute_path_to_url(path: impl AsRef<std::path::Path>) -> Result<Url, Error> {
     Url::from_file_path(&path).map_err(|_| Error::InvalidPath {

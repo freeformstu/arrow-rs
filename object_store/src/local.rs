@@ -1549,7 +1549,7 @@ mod tests {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 #[cfg(test)]
 mod not_wasm_tests {
     use std::time::Duration;

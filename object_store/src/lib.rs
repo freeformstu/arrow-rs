@@ -494,7 +494,7 @@
 //!
 
 #[cfg(all(
-    target_arch = "wasm32",
+    target_family = "wasm",
     any(feature = "gcp", feature = "aws", feature = "azure", feature = "http")
 ))]
 compile_error!("Features 'gcp', 'aws', 'azure', 'http' are not supported on wasm.");
@@ -504,7 +504,7 @@ pub mod aws;
 #[cfg(feature = "azure")]
 pub mod azure;
 pub mod buffered;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 pub mod chunked;
 pub mod delimited;
 #[cfg(feature = "gcp")]
@@ -512,7 +512,7 @@ pub mod gcp;
 #[cfg(feature = "http")]
 pub mod http;
 pub mod limit;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 pub mod local;
 pub mod memory;
 pub mod path;
@@ -556,7 +556,7 @@ pub use upload::*;
 pub use util::{coalesce_ranges, collect_bytes, GetRange, OBJECT_STORE_COALESCE_DEFAULT};
 
 use crate::path::Path;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 use crate::util::maybe_spawn_blocking;
 use async_trait::async_trait;
 use bytes::Bytes;
@@ -564,7 +564,7 @@ use chrono::{DateTime, Utc};
 use futures::{stream::BoxStream, StreamExt, TryStreamExt};
 use snafu::Snafu;
 use std::fmt::{Debug, Formatter};
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 use std::io::{Read, Seek, SeekFrom};
 use std::ops::Range;
 use std::sync::Arc;
@@ -1046,7 +1046,7 @@ impl GetResult {
     pub async fn bytes(self) -> Result<Bytes> {
         let len = self.range.end - self.range.start;
         match self.payload {
-            #[cfg(not(target_arch = "wasm32"))]
+            #[cfg(not(target_family = "wasm"))]
             GetResultPayload::File(mut file, path) => {
                 maybe_spawn_blocking(move || {
                     file.seek(SeekFrom::Start(self.range.start as _))
@@ -1065,7 +1065,7 @@ impl GetResult {
                 .await
             }
             GetResultPayload::Stream(s) => collect_bytes(s, Some(len)).await,
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(target_family = "wasm")]
             _ => unimplemented!("File IO not implemented on wasm32."),
         }
     }
@@ -1086,13 +1086,13 @@ impl GetResult {
     /// no additional complexity or overheads
     pub fn into_stream(self) -> BoxStream<'static, Result<Bytes>> {
         match self.payload {
-            #[cfg(not(target_arch = "wasm32"))]
+            #[cfg(not(target_family = "wasm"))]
             GetResultPayload::File(file, path) => {
                 const CHUNK_SIZE: usize = 8 * 1024;
                 local::chunked_stream(file, path, self.range, CHUNK_SIZE)
             }
             GetResultPayload::Stream(s) => s,
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(target_family = "wasm")]
             _ => unimplemented!("File IO not implemented on wasm32."),
         }
     }
